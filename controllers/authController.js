@@ -41,7 +41,7 @@ export const login = async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, //will set true in live so we can make https only
+      secure: true, //will set true in live so we can make https only
       sameSite: "none",
       maxAge: 15 * 60 * 1000,
     });
