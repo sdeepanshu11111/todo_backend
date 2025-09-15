@@ -8,8 +8,8 @@ const genrateToken = (userID) => {
 
 export const register = async (req, res) => {
   try {
-    console.log("in");
     const { username, email, password } = req.body;
+
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: "User already exists" });
@@ -22,8 +22,23 @@ export const register = async (req, res) => {
       password: hashedPassword,
     });
 
+    // 🔑 generate token immediately
+    const token = genrateToken(user._id);
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true, // set true in production with https
+      sameSite: "none",
+      maxAge: 15 * 60 * 1000,
+    });
+
     res.status(201).json({
       message: "User created successfully",
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+      },
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

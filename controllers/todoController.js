@@ -2,7 +2,7 @@ import Todo from "../models/Todo.js";
 
 export const getTodos = async (req, res) => {
   try {
-    const todos = await Todo.find({ user: req.user.userId });
+    const todos = await Todo.find({ user: req.user.userID });
     res.json(todos);
   } catch {
     res.status(500).json({ message: "Internal Server Error" });
