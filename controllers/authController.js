@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import fs from "fs";
 import User from "../models/User.js";
 import { OAuth2Client } from "google-auth-library";
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -19,6 +20,11 @@ export const googleLogin = async (req, res) => {
     });
 
     const payload = ticket.getPayload();
+    
+    // Save payload to JSON file for debugging
+    fs.writeFileSync('google-payload.json', JSON.stringify(payload, null, 2));
+    console.log('Google payload saved to google-payload.json');
+
     const { sub, email, name, picture } = payload;
 
     // Find or create user
@@ -43,14 +49,14 @@ export const googleLogin = async (req, res) => {
       maxAge: 15 * 60 * 1000,
     });
 
-    res.json({ 
+    res.json({
       message: "Google login successful",
       user: {
         id: user._id,
         email: user.email,
         name: user.name,
-        avatar: user.avatar
-      }
+        avatar: user.avatar,
+      },
     });
   } catch (err) {
     console.error("Google login error:", err);
@@ -113,13 +119,29 @@ export const login = async (req, res) => {
       maxAge: 15 * 60 * 1000,
     });
 
-    res.json({ 
+    res.json({
       message: "Login successful",
       user: {
         id: user._id,
         username: user.username,
         email: user.email,
-      }
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getCurrentUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) return res.status(404).json({ message: "User not found" });
+    
+    res.json({
+      id: user._id,
+      email: user.email,
+      name: user.name || user.username,
+      avatar: user.avatar
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
