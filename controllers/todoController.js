@@ -11,7 +11,7 @@ export const getTodos = async (req, res) => {
 
 export const createTodo = async (req, res) => {
   const todo = await Todo.create({
-    user: req.user.userId,
+    user: req.user.userID,
     title: req.body.title,
   });
 
@@ -20,7 +20,7 @@ export const createTodo = async (req, res) => {
 
 export const updateTodo = async (req, res) => {
   const todo = await Todo.findOneAndUpdate(
-    { _id: req.params.id, user: req.user.userId },
+    { _id: req.params.id, user: req.user.userID },
     req.body,
     { new: true }
   );
@@ -29,6 +29,6 @@ export const updateTodo = async (req, res) => {
 };
 
 export const deleteTodo = async (req, res) => {
-  await Todo.findOneAndDelete({ _id: req.params.id, user: req.user.userId });
+  await Todo.findOneAndDelete({ _id: req.params.id, user: req.user.userID });
   res.json({ message: "Todo deleted" });
 };
