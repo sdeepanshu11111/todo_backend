@@ -4,8 +4,8 @@ import User from "../models/User.js";
 import { OAuth2Client } from "google-auth-library";
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-const genrateToken = (userID) => {
-  return jwt.sign({ userID }, process.env.JWT_SECRET, { expiresIn: "15m" });
+const genrateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "15m" });
 };
 
 export const googleLogin = async (req, res) => {
@@ -26,19 +26,32 @@ export const googleLogin = async (req, res) => {
     if (!user) {
       user = await User.create({
         email,
-        password: "", // not needed for google
         name,
         googleId: sub,
         avatar: picture,
       });
     }
 
-    // Create JWT for your app
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
+    // Create JWT token
+    const token = genrateToken(user._id);
+
+    // Set cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 15 * 60 * 1000,
     });
 
-    res.json({ token, user });
+    res.json({ 
+      message: "Google login successful",
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        avatar: user.avatar
+      }
+    });
   } catch (err) {
     console.error("Google login error:", err);
     res.status(401).json({ message: "Google authentication failed" });
@@ -61,18 +74,18 @@ export const register = async (req, res) => {
       password: hashedPassword,
     });
 
-    // 🔑 generate token immediately
+    // Generate token immediately
     const token = genrateToken(user._id);
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, // set true in production with https
+      secure: true,
       sameSite: "none",
       maxAge: 15 * 60 * 1000,
     });
 
     res.status(201).json({
-      message: "User created successfully",
+      message: "Registration successful",
       user: {
         id: user._id,
         username: user.username,
@@ -100,7 +113,14 @@ export const login = async (req, res) => {
       maxAge: 15 * 60 * 1000,
     });
 
-    res.json({ message: "Login Successfully" });
+    res.json({ 
+      message: "Login successful",
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -6,7 +6,7 @@ export const protect = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+    req.user = { id: decoded.id || decoded.userID }; // Handle both old and new tokens
     next();
   } catch (err) {
     res.status(403).json({ message: "Token invalid or expired" });
