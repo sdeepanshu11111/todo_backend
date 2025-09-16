@@ -5,7 +5,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.js",
-    "start": "nodemon server.js"
+    "start": "nodemon server.js",
+    "debug": "node --inspect server.js",
+    "debug-brk": "node --inspect-brk server.js"
   },
   "keywords": [],
   "author": "",
