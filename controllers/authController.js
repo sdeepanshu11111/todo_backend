@@ -20,10 +20,10 @@ export const googleLogin = async (req, res) => {
     });
 
     const payload = ticket.getPayload();
-    
+
     // Save payload to JSON file for debugging
-    fs.writeFileSync('google-payload.json', JSON.stringify(payload, null, 2));
-    console.log('Google payload saved to google-payload.json');
+    fs.writeFileSync("google-payload.json", JSON.stringify(payload, null, 2));
+    console.log("Google payload saved to google-payload.json");
 
     const { sub, email, name, picture } = payload;
 
@@ -134,14 +134,14 @@ export const login = async (req, res) => {
 
 export const getCurrentUser = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
+    const user = await User.findById(req.user.id).select("-password");
     if (!user) return res.status(404).json({ message: "User not found" });
-    
+
     res.json({
       id: user._id,
       email: user.email,
       name: user.name || user.username,
-      avatar: user.avatar
+      avatar: user.avatar,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -154,5 +154,14 @@ export const logout = async (req, res) => {
     res.json({ message: "Logout Successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+export const getUsers = async (req, res) => {
+  try {
+    const users = await User.find().select("_id name email");
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch users" });
   }
 };
